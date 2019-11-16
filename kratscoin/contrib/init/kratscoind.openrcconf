@@ -1,0 +1,33 @@
+# /etc/conf.d/kratscoind: config file for /etc/init.d/kratscoind
+
+# Config file location
+#KRATSCOIND_CONFIGFILE="/etc/kratscoin/kratscoin.conf"
+
+# What directory to write pidfile to?  (created and owned by $KRATSCOIND_USER)
+#KRATSCOIND_PIDDIR="/var/run/kratscoind"
+
+# What filename to give the pidfile
+#KRATSCOIND_PIDFILE="${KRATSCOIND_PIDDIR}/kratscoind.pid"
+
+# Where to write kratscoind data (be mindful that the blockchain is large)
+#KRATSCOIND_DATADIR="/var/lib/kratscoind"
+
+# User and group to own kratscoind process
+#KRATSCOIND_USER="kratscoin"
+#KRATSCOIND_GROUP="kratscoin"
+
+# Path to kratscoind executable
+#KRATSCOIND_BIN="/usr/bin/kratscoind"
+
+# Nice value to run kratscoind under
+#KRATSCOIND_NICE=0
+
+# Additional options (avoid -conf and -datadir, use flags above)
+#KRATSCOIND_OPTS=""
+
+# The timeout in seconds OpenRC will wait for kratscoind to terminate
+# after a SIGTERM has been raised.
+# Note that this will be mapped as argument to start-stop-daemon's
+# '--retry' option, which means you can specify a retry schedule
+# here. For more information see man 8 start-stop-daemon.
+KRATSCOIND_SIGTERM_TIMEOUT=60

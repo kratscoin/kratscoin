@@ -1,0 +1,92 @@
+#!/sbin/openrc-run
+
+# backward compatibility for existing gentoo layout 
+#
+if [ -d "/var/lib/kratscoin/.kratscoin" ]; then
+	KRATSCOIND_DEFAULT_DATADIR="/var/lib/kratscoin/.kratscoin"
+else
+	KRATSCOIND_DEFAULT_DATADIR="/var/lib/kratscoind"
+fi
+
+KRATSCOIND_CONFIGFILE=${KRATSCOIND_CONFIGFILE:-/etc/kratscoin/kratscoin.conf}
+KRATSCOIND_PIDDIR=${KRATSCOIND_PIDDIR:-/var/run/kratscoind}
+KRATSCOIND_PIDFILE=${KRATSCOIND_PIDFILE:-${KRATSCOIND_PIDDIR}/kratscoind.pid}
+KRATSCOIND_DATADIR=${KRATSCOIND_DATADIR:-${KRATSCOIND_DEFAULT_DATADIR}}
+KRATSCOIND_USER=${KRATSCOIND_USER:-${KRATSCOIN_USER:-kratscoin}}
+KRATSCOIND_GROUP=${KRATSCOIND_GROUP:-kratscoin}
+KRATSCOIND_BIN=${KRATSCOIND_BIN:-/usr/bin/kratscoind}
+KRATSCOIND_NICE=${KRATSCOIND_NICE:-${NICELEVEL:-0}}
+KRATSCOIND_OPTS="${KRATSCOIND_OPTS:-${KRATSCOIN_OPTS}}"
+
+name="Kratscoin Core Daemon"
+description="Kratscoin cryptocurrency P2P network daemon"
+
+command="/usr/bin/kratscoind"
+command_args="-pid=\"${KRATSCOIND_PIDFILE}\" \
+		-conf=\"${KRATSCOIND_CONFIGFILE}\" \
+		-datadir=\"${KRATSCOIND_DATADIR}\" \
+		-daemon \
+		${KRATSCOIND_OPTS}"
+
+required_files="${KRATSCOIND_CONFIGFILE}"
+start_stop_daemon_args="-u ${KRATSCOIND_USER} \
+			-N ${KRATSCOIND_NICE} -w 2000"
+pidfile="${KRATSCOIND_PIDFILE}"
+
+# The retry schedule to use when stopping the daemon. Could be either
+# a timeout in seconds or multiple signal/timeout pairs (like
+# "SIGKILL/180 SIGTERM/300")
+retry="${KRATSCOIND_SIGTERM_TIMEOUT}"
+
+depend() {
+	need localmount net
+}
+
+# verify
+# 1) that the datadir exists and is writable (or create it)
+# 2) that a directory for the pid exists and is writable
+# 3) ownership and permissions on the config file
+start_pre() {
+	checkpath \
+	-d \
+	--mode 0750 \
+	--owner "${KRATSCOIND_USER}:${KRATSCOIND_GROUP}" \
+	"${KRATSCOIND_DATADIR}"
+
+	checkpath \
+	-d \
+	--mode 0755 \
+	--owner "${KRATSCOIND_USER}:${KRATSCOIND_GROUP}" \
+	"${KRATSCOIND_PIDDIR}"
+
+	checkpath -f \
+	-o ${KRATSCOIND_USER}:${KRATSCOIND_GROUP} \
+	-m 0660 \
+	${KRATSCOIND_CONFIGFILE}
+
+	checkconfig || return 1
+}
+
+checkconfig()
+{
+	if ! grep -qs '^rpcpassword=' "${KRATSCOIND_CONFIGFILE}" ; then
+		eerror ""
+		eerror "ERROR: You must set a secure rpcpassword to run kratscoind."
+		eerror "The setting must appear in ${KRATSCOIND_CONFIGFILE}"
+		eerror ""
+		eerror "This password is security critical to securing wallets "
+		eerror "and must not be the same as the rpcuser setting."
+		eerror "You can generate a suitable random password using the following "
+		eerror "command from the shell:"
+		eerror ""
+		eerror "bash -c 'tr -dc a-zA-Z0-9 < /dev/urandom | head -c32 && echo'"
+		eerror ""
+		eerror "It is recommended that you also set alertnotify so you are "
+		eerror "notified of problems:"
+		eerror ""
+		eerror "ie: alertnotify=echo %%s | mail -s \"Kratscoin Alert\"" \
+			"admin@foo.com"
+		eerror ""
+		return 1
+	fi
+}

@@ -1,0 +1,11 @@
+version: "2"
+services:
+  app:
+    build: .
+    volumes:
+      - home-app-sync:/app:nocopy
+    environment:
+      - WITHIN_DOCKER=1
+volumes:
+  home-app-sync:
+    external: true

@@ -1,0 +1,9 @@
+version: "2"
+syncs:
+  home-app-sync:
+    src: "./"
+    sync_excludes:
+      [".gitignore", ".git/", "tmp/cache", "log", "README.md", ".docker*"]
+    notify_terminal: false
+    watch_excludes:
+      [".*/.git", ".gitignore", "docker-*.yml", "tmp", "Dockerfile", ".docker*"]
