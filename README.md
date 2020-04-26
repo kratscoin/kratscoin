@@ -1,4 +1,4 @@
-# Kratscoin: Peer to Peer Electronic Money with serial number
+# Kratscoin: Serial Numbered Peer-to-Peer Digital Asset
 
 ## Vision:
 
